@@ -5,7 +5,7 @@ import NeoField from '../../../component/field/Field';
 import { SelectionConfirmationButton } from './SelectionConfirmationButton';
 
 const FreeTextParameterSelectComponent = (props: ParameterSelectProps) => {
-  const { setManual } = props;
+  const { manualParameterSave } = props;
   const setParameterTimeout =
     props.settings && props.settings.setParameterTimeout ? props.settings.setParameterTimeout : 1000;
   const defaultValue =
@@ -19,7 +19,7 @@ const FreeTextParameterSelectComponent = (props: ParameterSelectProps) => {
   const clearParameterOnFieldClear =
     props.settings && props.settings.clearParameterOnFieldClear ? props.settings.clearParameterOnFieldClear : false;
   const [running, setRunning] = React.useState(false);
-  const [paramValueTemp, setParamValueTemp] = React.useState(null);
+  const [paramValueLocal, setParamValueLocal] = React.useState(null);
 
   const setParameterValue = (value) => {
     setRunning(false);
@@ -27,14 +27,15 @@ const FreeTextParameterSelectComponent = (props: ParameterSelectProps) => {
   };
   const debouncedSetParameterValue = useCallback(debounce(setParameterValue, setParameterTimeout), []);
 
-  const manualHandleParameters = () => {
-    handleParameters(paramValueTemp, false);
+  const manualHandleParametersUpdate = () => {
+    handleParametersUpdate(paramValueLocal, false);
   };
 
-  const handleParameters = (value, manual = false) => {
-    setParamValueTemp(value);
+  const handleParametersUpdate = (value, manual = false) => {
+    setParamValueLocal(value);
 
     if (manual) {
+      // setRunning(false);
       return;
     }
 
@@ -51,7 +52,7 @@ const FreeTextParameterSelectComponent = (props: ParameterSelectProps) => {
   }
 
   return (
-    <div style={{ width: '100%', marginTop: '5px' }}>
+    <div className={'n-flex n-flex-row n-flex-wrap n-items-center'} style={{ width: '100%', marginTop: '5px' }}>
       <NeoField
         key={'freetext'}
         label={helperText ? helperText : `${label} ${property}`}
@@ -59,16 +60,22 @@ const FreeTextParameterSelectComponent = (props: ParameterSelectProps) => {
         value={inputText}
         variant='outlined'
         placeholder={'Enter text here...'}
-        style={{ marginBottom: '10px', marginRight: '10px', marginLeft: '15px', width: 'calc(100% - 80px)' }}
+        style={{
+          marginBottom: '20px',
+          marginRight: '10px',
+          marginLeft: '15px',
+          minWidth: `calc(100% - ${manualParameterSave ? '80' : '30'}px)`,
+          maxWidth: 'calc(100% - 30px)',
+        }}
         onChange={(newValue) => {
           setRunning(true);
           setInputText(newValue);
 
-          handleParameters(newValue, setManual);
+          handleParametersUpdate(newValue, manualParameterSave);
         }}
       />
-      {setManual ? (
-        <SelectionConfirmationButton onClick={() => manualHandleParameters()} key={`selectionConfirmation`} />
+      {manualParameterSave ? (
+        <SelectionConfirmationButton onClick={() => manualHandleParametersUpdate()} key={`selectionConfirmation`} />
       ) : (
         <></>
       )}
